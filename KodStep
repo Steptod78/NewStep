@@ -1,0 +1,27 @@
+var configCmd = &cobra.Command{
+	Use:   "config",
+	Short: "Initial config generation",
+	Run: func(cmd *cobra.Command, args []string) {
+		// Error omitted because we have default flag value
+		configPath, _ := cmd.Flags().GetString("path")
+
+		err := conf.FillRuntimePaths()
+		if err != nil {
+			log.WithError(err).Fatal("Filling config")
+		}
+
+		if configPath == "" {
+			configPath = filepath.Join(conf.Config.DirPathConf.DataDir, consts.DefaultConfigFile)
+		}
+		err = viper.Unmarshal(&conf.Config)
+		if err != nil {
+			log.WithError(err).Fatal("Marshalling config to global struct variable")
+		}
+
+		err = conf.SaveConfig(configPath)
+		if err != nil {
+			log.WithError(err).Fatal("Saving config")
+		}
+		log.Infof("Config is saved to %s", configPath)
+	},
+}
